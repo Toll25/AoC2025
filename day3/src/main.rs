@@ -42,11 +42,7 @@ fn part2(input: &Vec<Vec<u32>>) {
         for num in 0..12 {
             numbers.push((0, 0));
             let lower_limit = if num == 0 { 0 } else { numbers[num - 1].0 + 1 };
-            let upper_limit = if num == 11 {
-                line.len()
-            } else {
-                line.len() - 11 + num
-            };
+            let upper_limit = line.len() - 11 + num;
             // println!("lower_limit {lower_limit}");
             // println!("upper_limit {upper_limit}");
             for (index, digit) in line[lower_limit..upper_limit].iter().enumerate() {
