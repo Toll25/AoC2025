@@ -6,7 +6,7 @@ use ordered_float::OrderedFloat;
 fn main() {
     let input = get_input();
     dbg!(&input);
-    // part1(&input);
+    part1(&input);
     part2(&input);
 }
 
@@ -20,17 +20,18 @@ fn part1(input: &Vec<(i32, i32, i32)>) {
     for el in input.iter().enumerate() {
         network_map.insert(el.0, el.0);
     }
-    for _con_index in 0..1000 {
-        let temp_combinations = combinations.clone();
-        let shortest = temp_combinations
-            .iter()
-            .enumerate()
-            .min_by_key(|x| x.1.2)
-            .unwrap();
-        combinations.remove(shortest.0);
 
-        let first_network = network_map[&shortest.1.0];
-        let second_network = network_map[&shortest.1.1];
+    let mut combinations: Vec<(usize, usize)> = combinations
+        .iter()
+        .sorted_by_key(|x| x.2)
+        .rev()
+        .map(|x| (x.0, x.1))
+        .collect();
+    for _con_index in 0..1000 {
+        let shortest = combinations.pop().unwrap();
+
+        let first_network = network_map[&shortest.0];
+        let second_network = network_map[&shortest.1];
         // networks.insert(shortest.1.1, Vec::new());
         let temp_network = network_map.clone();
         for second_network_box in temp_network.iter().filter(|x| *x.1 == second_network) {
@@ -65,29 +66,33 @@ fn part2(input: &Vec<(i32, i32, i32)>) {
     for el in input.iter().enumerate() {
         network_map.insert(el.0, el.0);
     }
-    let mut last_shortest = (0, 0);
-    while !network_map.values().all_equal() {
-        let temp_combinations = combinations.clone();
-        let shortest = temp_combinations
-            .iter()
-            .enumerate()
-            .min_by_key(|x| x.1.2)
-            .unwrap();
-        // println!("Connected");
-        last_shortest = (shortest.1.0, shortest.1.1);
-        combinations.remove(shortest.0);
+    let mut shortest = (0, 0);
 
-        let first_network = network_map[&shortest.1.0];
-        let second_network = network_map[&shortest.1.1];
-        // networks.insert(shortest.1.1, Vec::new());
-        let temp_network = network_map.clone();
-        for second_network_box in temp_network.iter().filter(|x| *x.1 == second_network) {
-            network_map.insert(*second_network_box.0, first_network);
+    let mut combinations: Vec<(usize, usize)> = combinations
+        .iter()
+        .sorted_by_key(|x| x.2)
+        .rev()
+        .map(|x| (x.0, x.1))
+        .collect();
+    // dbg!(&combinations);
+    while !network_map.values().all_equal() {
+        shortest = combinations.pop().unwrap();
+        // dbg!(&shortest);
+
+        let first_network = network_map[&shortest.0];
+        let second_network = network_map[&shortest.1];
+        let second_network_boxes: Vec<usize> = network_map
+            .iter()
+            .filter(|x| *x.1 == second_network)
+            .map(|x| *x.0)
+            .collect();
+        for second_network_box in second_network_boxes {
+            network_map.insert(second_network_box, first_network);
         }
     }
 
-    dbg!(last_shortest);
-    dbg!(input[last_shortest.0].0 * input[last_shortest.1].0);
+    // dbg!(shortest);
+    dbg!(input[shortest.0].0 * input[shortest.1].0);
 }
 
 fn get_distance(first: (i32, i32, i32), second: (i32, i32, i32)) -> f64 {
